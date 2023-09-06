@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="在笔者使用过的日历&#x2F;日程类App中，飞书日程的效果和体验是比较优秀的。但又不能用飞书记录自己的私人日程，只能自己仿写一个了。 飞书上的日程有四种视图：日程、日、三日、月，今天我们先首先要讲的是三日视图（其实日视图和三日视图差不多，只需要处理一下一天的宽度就行了），先上效果图：  需求确定拆解一下这张效果图里的需求：  整个控件是一个坐标轴，横轴表示日期（yyyyMMdd），纵轴表示钟点(">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android自定义View】高仿飞书日历--三日视图">
+<meta property="og:url" content="http://example.com/2023/04/02/schedule1/index.html">
+<meta property="og:site_name" content="blackfrog">
+<meta property="og:description" content="在笔者使用过的日历&#x2F;日程类App中，飞书日程的效果和体验是比较优秀的。但又不能用飞书记录自己的私人日程，只能自己仿写一个了。 飞书上的日程有四种视图：日程、日、三日、月，今天我们先首先要讲的是三日视图（其实日视图和三日视图差不多，只需要处理一下一天的宽度就行了），先上效果图：  需求确定拆解一下这张效果图里的需求：  整个控件是一个坐标轴，横轴表示日期（yyyyMMdd），纵轴表示钟点(">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/25b040840f904838947ea343796c1ea1~tplv-k3u1fbpfcp-watermark.image">
+<meta property="article:published_time" content="2023-04-02T14:40:57.000Z">
+<meta property="article:modified_time" content="2023-09-06T06:59:50.399Z">
+<meta property="article:author" content="blackfrog">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/25b040840f904838947ea343796c1ea1~tplv-k3u1fbpfcp-watermark.image">
+
+
+<link rel="canonical" href="http://example.com/2023/04/02/schedule1/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2023/04/02/schedule1/","path":"2023/04/02/schedule1/","title":"【Android自定义View】高仿飞书日历--三日视图"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【Android自定义View】高仿飞书日历--三日视图 | blackfrog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">blackfrog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">慎 敬 勤 恒</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-schedule"><a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E6%B1%82%E7%A1%AE%E5%AE%9A"><span class="nav-number">1.</span> <span class="nav-text">需求确定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A1%86%E6%9E%B6%E5%85%88%E8%A1%8C"><span class="nav-number">2.</span> <span class="nav-text">框架先行</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%98%E5%88%B6%E6%A1%86%E6%9E%B6"><span class="nav-number">2.1.</span> <span class="nav-text">绘制框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BB%91%E5%8A%A8%E6%A1%86%E6%9E%B6"><span class="nav-number">2.2.</span> <span class="nav-text">滑动框架</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E8%AE%A1%E7%AE%97component%E4%BD%8D%E7%BD%AE"><span class="nav-number">3.1.</span> <span class="nav-text">怎样计算component位置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E7%BB%B4%E6%8A%A4visibleComponents"><span class="nav-number">3.2.</span> <span class="nav-text">怎样维护visibleComponents</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E5%AE%9E%E7%8E%B0%E5%9D%90%E6%A0%87%E6%BB%91%E5%8A%A8"><span class="nav-number">3.3.</span> <span class="nav-text">怎样实现坐标滑动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%80%E5%89%B2"><span class="nav-number">4.</span> <span class="nav-text">杀割</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">blackfrog</p>
+  <div class="site-description" itemprop="description">blackfrog的个人博客</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/02/schedule1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="blackfrog">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blackfrog">
+      <meta itemprop="description" content="blackfrog的个人博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【Android自定义View】高仿飞书日历--三日视图 | blackfrog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【Android自定义View】高仿飞书日历--三日视图
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-04-02 22:40:57" itemprop="dateCreated datePublished" datetime="2023-04-02T22:40:57+08:00">2023-04-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-09-06 14:59:50" itemprop="dateModified" datetime="2023-09-06T14:59:50+08:00">2023-09-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%87%AA%E5%AE%9A%E4%B9%89View/" itemprop="url" rel="index"><span itemprop="name">自定义View</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>在笔者使用过的日历&#x2F;日程类App中，飞书日程的效果和体验是比较优秀的。但又不能用飞书记录自己的私人日程，只能自己仿写一个了。</p>
+<p>飞书上的日程有四种视图：日程、日、三日、月，今天我们先首先要讲的是三日视图（其实日视图和三日视图差不多，只需要处理一下一天的宽度就行了），先上效果图：</p>
+<p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/25b040840f904838947ea343796c1ea1~tplv-k3u1fbpfcp-watermark.image" alt="三日.gif"></p>
+<h2 id="需求确定"><a href="#需求确定" class="headerlink" title="需求确定"></a>需求确定</h2><p>拆解一下这张效果图里的需求：</p>
+<ul>
+<li>整个控件是一个坐标轴，横轴表示日期（yyyyMMdd），纵轴表示钟点(HHmm)，交点表示具体时间(yyyyMMdd-HHmm)。</li>
+<li>坐标内部绘制日程以及当前时间标线。</li>
+<li>坐标轴可以上下左右自由滑动，日程和当前时间标线跟随滑动。左右滑动结束后，需要有类似<code>SnapHelper</code>的定位效果。</li>
+<li>点击空白区域，可以在相应的时间点创建一个日程，日程可以设置主题、日期、开始&#x2F;结束时间、重复、提醒。</li>
+<li>日程可以通过拖曳修改开始时间和持续时间，拖曳修改时间钟点的最小单位是一刻钟(15min)，如果拖曳日程超出控件范围，横、纵坐标自动相应滚动。</li>
+</ul>
+<h2 id="框架先行"><a href="#框架先行" class="headerlink" title="框架先行"></a>框架先行</h2><p>明确需求后，我们需要构思框架和准备工具了。</p>
+<p>首先，时间相关处理，肯定要大量使用时间戳和<code>java.util.Calendar</code>了，并且要做好封装一套工具的准备。</p>
+<p>滑动控件，我们首先想到的是<code>RecyclerView</code>、<code>ScrollView</code>之类的。但是坐标需要上下左右自由滑动，而且横坐标还是无限滑动的，甚至日程还可以自由拖曳，作为一个老开发，肯定马上作好避坑的准备了，基于<code>RecyclerView</code>或<code>ScrollView</code>去实现肯定会处处受限制。想要自由发挥，就要把复杂的事情简单化，不外乎<code>meausre</code>、<code>layout</code>、<code>draw</code>，自然而然就想到自定义控件了。至于点击、滑动、长按和拖曳，处理touch事件就好了。</p>
+<p>是要覆写<code>View</code>，还是<code>ViewGroup</code>呢，其实已经不重要了。如果覆写<code>View</code>，那么坐标轴、日程等组件，我们就用<code>canvas</code>绘制；如果覆写<code>ViewGroup</code>，我们可能要把各组件的测量和绘制交给子View来处理。既然我们想要不受限制，那就自由到底，开撸！</p>
+<h3 id="绘制框架"><a href="#绘制框架" class="headerlink" title="绘制框架"></a>绘制框架</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">class ScheduleView @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0</span><br><span class="line">) : View(context, attrs, defStyleAttr) &#123;</span><br><span class="line">    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)</span><br><span class="line"></span><br><span class="line">    override fun onDraw(canvas: Canvas) &#123;</span><br><span class="line">        super.onDraw(canvas)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun onTouchEvent(event: MotionEvent): Boolean &#123;</span><br><span class="line">        return onTouchEvent(event)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>我们定义了一张白纸，一支笔。</p>
+<p>有的同学可能已经迫不及待地在<code>onDraw</code>方法下写下如下方法了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">override fun onDraw(canvas: Canvas) &#123;</span><br><span class="line">    // 绘制X轴坐标</span><br><span class="line">    drawDateLine(canvas)</span><br><span class="line">    // 绘制Y轴坐标</span><br><span class="line">    drawClockLine(canvas)</span><br><span class="line">    // 绘制日程</span><br><span class="line">    drawSchedules(canvas)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>请先等一等！</p>
+<p>数据驱动UI，是作为画UI程序页的基本思想。只要反复默念“<strong>数据驱动UI</strong>”一百次，满屏幕都变成了数据了。控件里的组件长着同样的骨骼：beginTime - endTime。于是，马上写下我们的基本接口，它也将是整个业务的基本抽象。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">IScheduleModel</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> beginTime: <span class="built_in">Long</span></span><br><span class="line">    <span class="keyword">val</span> endTime: <span class="built_in">Long</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>考虑一下，每个可绘制的组件，都是（或有）一个<code>IScheduleModel</code>，我们可以假想组件就是一个子<code>View</code>，但是又不是真正的<code>View</code>。为了实现与数据分离，先抽象一下“组件”这个家伙好了。我们可以直接模仿<code>View</code>的api，为了让它有一点不一样，位置和大小我们用一个<code>RectF</code>来表示，因为它既可以描述位置，也可以描述尺寸。更新rect的位置时，我们需要锚定当前的位置，那就定义一个带锚参数的<code>updateDrawingRect</code>方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">interface IScheduleComponent&lt;T : IScheduleModel&gt; &#123;</span><br><span class="line">    val model: T</span><br><span class="line">    val drawingRect: RectF</span><br><span class="line">    fun updateDrawingRect(anchorPoint: Point)</span><br><span class="line">    fun onDraw(canvas: Canvas, paint: Paint)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样一来，我们的<code>onDraw</code>中的实现就跟着被抽象了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">private val scrollPosition = Point()</span><br><span class="line">override fun onDraw(canvas: Canvas) &#123;</span><br><span class="line">    visibleComponents.forEach &#123;</span><br><span class="line">        it.updateDrawingRect(scrollPosition)</span><br><span class="line">        it.onDraw(canvas, paint)</span><br><span class="line">    &#125;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码的意思是，在每次触发<code>onDraw</code>方法时，都遍历可见的<code>IScheduleComponent</code>，更新<code>drawingRect</code>，再绘制它就好了。这就是整个绘制（包括测量和定位）过程的基本框架了，每个component的细节可以分别实现了。</p>
+<h3 id="滑动框架"><a href="#滑动框架" class="headerlink" title="滑动框架"></a>滑动框架</h3><p>有的同学可能已经迫不及待地开始写绘制框架的具体实现了。</p>
+<p>请先等一等。</p>
+<p>我们还有滑动相关的框架没有写呢。既要上下左右自由滑动，又要snap效果，简直比<code>RecyclerView</code>还要复杂啊。<code>RecyclerView</code>都要定义一个<code>LayoutManager</code>来管理滑动和布局，我们也有理由把滑动逻辑抽象出来。我们定义一个<code>IScheduleWidget</code>，用以管理滑动事宜。相应的，<code>ScheduleView</code>负责绘制，也可以抽象成一个<code>IScheduleRender</code>，用以更新component位置的<code>scrollPosition</code>，就可以抽象于此。暂且让它们俩双向依赖吧。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">interface IScheduleWidget &#123;</span><br><span class="line">    val render: IScheduleRender</span><br><span class="line">    fun onTouchEvent(motionEvent: MotionEvent): Boolean</span><br><span class="line">    fun onScroll(x: Int, y: Int)</span><br><span class="line">    fun scrollTo(x: Int, y: Int, duration: Int = 250)</span><br><span class="line">    fun isScrolling(): Boolean</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">interface IScheduleRender &#123;</span><br><span class="line">    var widget: IScheduleWidget</span><br><span class="line">    val scrollPosition: Point</span><br><span class="line">    fun render(x: Int, y: Int)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>于是，ScheduleView就成了这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">class ScheduleView @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0</span><br><span class="line">) : View(context, attrs, defStyleAttr), IScheduleRender &#123;</span><br><span class="line">    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)</span><br><span class="line">    override lateinit var widget: IScheduleWidget</span><br><span class="line">    override val scrollPosition: Point = Point()</span><br><span class="line"></span><br><span class="line">    override fun render(x: Int, y: Int) &#123;</span><br><span class="line">        scrollPosition.x = x</span><br><span class="line">        scrollPosition.y = y</span><br><span class="line">        invalidate()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    override fun onDraw(canvas: Canvas) &#123;</span><br><span class="line">        visibleComponents.forEach &#123;</span><br><span class="line">            it.updateDrawingRect(scrollPosition)</span><br><span class="line">            it.onDraw(canvas, paint)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun onTouchEvent(event: MotionEvent): Boolean &#123;</span><br><span class="line">        return widget.onTouchEvent(event)</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>然后实现<code>IScheduleWidget</code>，这样整个绘制、滑动框架就定义完成了。左右滑动控件时，都会自动更新坐标的位置，并触发<code>ScheduleView</code>下的各components绘制自己。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">class ScheduleWidget(override val render: IScheduleRender) : IScheduleWidget &#123;</span><br><span class="line">    private var scrollX: Int = 0 // 0代表今天</span><br><span class="line">    private var scrollY: Int = 0 // 0代表零点</span><br><span class="line">    override fun onTouchEvent(motionEvent: MotionEvent): Boolean &#123;</span><br><span class="line">        // TODO 处理手势，计算scroolX/Y</span><br><span class="line">        // scrollX = handle(motionEvent)</span><br><span class="line">        // scrollY = handle(motionEvent)</span><br><span class="line">        return false</span><br><span class="line">    &#125;</span><br><span class="line">    override fun onScroll(x: Int, y: Int) &#123;</span><br><span class="line">        // 需要注意的是，滑动距离和坐标对应的x、y是相反的</span><br><span class="line">        render.render(-x, -y)</span><br><span class="line">    &#125;</span><br><span class="line">    override fun scrollTo(x: Int, y: Int) &#123;</span><br><span class="line">        // TODO 对外暴露的scroll方法</span><br><span class="line">        // scrollX = handle(x)</span><br><span class="line">        // scrollY = handle(y)</span><br><span class="line">    &#125;</span><br><span class="line">    override fun isScrolling(): Boolean = false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此外，需求中需要拖曳日程，component就像一个<code>View</code>，当然也可以处理了touch事件了，复制一个<code>onTouchEvent</code>方法好了。由于只有拖曳日程时需要单独处理，我们给它一个空实现。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">interface IScheduleComponent&lt;T : IScheduleModel&gt; &#123;</span><br><span class="line">    ...</span><br><span class="line">    fun onTouchEvent(ev: TouchEvent): Boolean = false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此框架已经完成了。接下来，我们终于可以开始写实现部分了。由于比较枯燥，我们只针对一些关键实现做一部分讲解，详细代码请<a target="_blank" rel="noopener" href="https://github.com/blackfrogxxoo/ScheduleView/tree/master/widget/src/main/java/me/wxc/widget/schedule">参阅源码</a>。</p>
+<h2 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h2><h3 id="怎样计算component位置"><a href="#怎样计算component位置" class="headerlink" title="怎样计算component位置"></a>怎样计算component位置</h3><p>时间戳和坐标中的位置是一一对应的，上公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = dayWidth * (days - todayDays)</span><br><span class="line">y = dayHeight * hours / 24</span><br></pre></td></tr></table></figure>
+
+<p>今天零点的x和y就是初始值，任何组件都可以计算相对于今天零点的位置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">fun IScheduleModel.originRect(): RectF &#123;</span><br><span class="line">    // x轴： 与当天的间隔天数 * 一天的宽度</span><br><span class="line">    // y轴： 当前分钟数 / 一天的分钟数 * 一天的高度</span><br><span class="line">    val dDays = beginTime.dDays</span><br><span class="line">    val left = clockWidth + dDays * dayWidth</span><br><span class="line">    val right = left + dayWidth</span><br><span class="line">    val zeroClockTime = beginOfDay(beginTime).timeInMillis</span><br><span class="line">    val top = dateLineHeight + dayHeight * (beginTime - zeroClockTime) / dayMillis</span><br><span class="line">    val bottom = dateLineHeight + dayHeight * (endTime - zeroClockTime) / dayMillis</span><br><span class="line">    return RectF(left, top, right, bottom)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fun IScheduleComponent&lt;*&gt;.originRect(): RectF = model.originRect()</span><br></pre></td></tr></table></figure>
+<p>当前时间标线可以跟随坐标上下左右滑动，所以<code>drawingRect</code>(相对位置)是由<code>originRect</code>（绝对位置）和<code>anchorPoint</code>(滑动距离)共同决定的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// NowLineComponent</span><br><span class="line">override fun updateDrawingRect(anchorPoint: Point) &#123;</span><br><span class="line">    drawingRect.left = originRect.left + anchorPoint.x</span><br><span class="line">    drawingRect.right = originRect.right + anchorPoint.x</span><br><span class="line">    drawingRect.top = originRect.top + anchorPoint.y</span><br><span class="line">    drawingRect.bottom = originRect.bottom + anchorPoint.y</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而时刻表(y坐标轴)不跟随左右滑动，就是不需要处理x轴。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// ClockLineComponent</span><br><span class="line">override fun updateDrawingRect(anchorPoint: Point) &#123;</span><br><span class="line">    drawingRect.top = originRect.top + anchorPoint.y</span><br><span class="line">    drawingRect.bottom = originRect.bottom + anchorPoint.y</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="怎样维护visibleComponents"><a href="#怎样维护visibleComponents" class="headerlink" title="怎样维护visibleComponents"></a>怎样维护visibleComponents</h3><p>前面的框架代码中，我们在<code>ScheduleView</code>的<code>onDraw</code>方法中，遍历了<code>visibleComponents</code>。那么，这个<code>visibleComponents</code>怎么来的呢？总不能有一万个日程，都要生成一万个component来遍历和绘制吧。这里又可以参考<code>RecyclerView</code>了，我们也抽象一个adapter接口出来。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">interface IScheduleRenderAdapter &#123;</span><br><span class="line">    var models: MutableList&lt;IScheduleModel&gt;</span><br><span class="line">    val visibleComponents: List&lt;IScheduleComponent&lt;*&gt;&gt;</span><br><span class="line">    fun onCreateComponent(model: IScheduleModel): IScheduleComponent&lt;*&gt;?</span><br><span class="line">    fun notifyModelsChanged()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>并且，让<code>IScheduleRender</code>持有一个<code>IScheduleRenderAdapter</code>，我们再通过实现<code>visibleComponents</code>和<code>onCreateComponent</code>方法来实现具体逻辑。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">interface IScheduleRender &#123;</span><br><span class="line">    ...</span><br><span class="line">    val adapter: IScheduleRenderAdapter</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>相应的，ScheduleView中也要有相应实现。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">class ScheduleView @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0</span><br><span class="line">) : View(context, attrs, defStyleAttr), IScheduleRender &#123;</span><br><span class="line">    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)</span><br><span class="line">    override lateinit var widget: IScheduleWidget</span><br><span class="line">    override val scrollPosition: Point = Point()</span><br><span class="line">    override val adapter: IScheduleRenderAdapter = ScheduleAdapter()</span><br><span class="line">    </span><br><span class="line">    override fun render(x: Int, y: Int) &#123;</span><br><span class="line">        scrollPosition.x = x</span><br><span class="line">        scrollPosition.y = y</span><br><span class="line">        invalidate()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    override fun onDraw(canvas: Canvas) &#123;</span><br><span class="line">        adapter.visibleComponents.forEach &#123;</span><br><span class="line">            it.updateDrawingRect(scrollPosition)</span><br><span class="line">            it.onDraw(canvas, paint)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun onTouchEvent(event: MotionEvent): Boolean &#123;</span><br><span class="line">        return widget.onTouchEvent(event)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    class ScheduleAdapter : IScheduleRenderAdapter &#123;</span><br><span class="line">        // ...在adapter中处理model与component的转换过程，涉及分组、缓存和复用</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="怎样实现坐标滑动"><a href="#怎样实现坐标滑动" class="headerlink" title="怎样实现坐标滑动"></a>怎样实现坐标滑动</h3><p>简单来说，就是<code>GestureDetector</code>、<code>VelocityTracker</code>、<code>Scroller</code>这三个工具的应用了。</p>
+<p>在<code>ScheduleWidget</code>的<code>onTouchEvent</code>中需要同时处理坐标和日程的拖曳，所以大致是这样的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">override fun onTouchEvent(motionEvent: MotionEvent): Boolean &#123;</span><br><span class="line">    // 为了计算松手后的滑动速度，在这里把motionEvent添加到velocityTracker中</span><br><span class="line">    velocityTracker.addMovement(motionEvent)</span><br><span class="line">    // 日程拖曳相关</span><br><span class="line">    val downOnCreate = createTaskComponent?.onTouchEvent(motionEvent) ?: false</span><br><span class="line">    // 处理松手后的位置snap</span><br><span class="line">    if (motionEvent.action == MotionEvent.ACTION_UP) autoSnap()</span><br><span class="line">    // 坐标滑动相关处理交给guestureDetector</span><br><span class="line">    return downOnCreate || gestureDetector.onTouchEvent(motionEvent)</span><br></pre></td></tr></table></figure>
+<p>而在<code>gestureDetector</code>中，我们覆写<code>onDown</code>和<code>onScroll</code>方法，以处理上下左右的滑动：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">private var justDown = false</span><br><span class="line">override fun onDown(e: MotionEvent): Boolean &#123;</span><br><span class="line">    justDown = true</span><br><span class="line">    if (!scroller.isFinished) &#123;</span><br><span class="line">        scroller.abortAnimation()</span><br><span class="line">    &#125;</span><br><span class="line">    return true</span><br><span class="line">&#125;</span><br><span class="line">override fun onScroll(</span><br><span class="line">    e1: MotionEvent,</span><br><span class="line">    e2: MotionEvent,</span><br><span class="line">    distanceX: Float,</span><br><span class="line">    distanceY: Float</span><br><span class="line">): Boolean &#123;</span><br><span class="line">    if (justDown) &#123;</span><br><span class="line">        scrollHorizontal = abs(distanceX) &gt; abs(distanceY)</span><br><span class="line">    &#125;</span><br><span class="line">    if (scrollHorizontal) &#123;</span><br><span class="line">        scrollX += distanceX.toInt()</span><br><span class="line">        scrollX = scrollX.coerceAtMost(MAX_SCROLL_X).coerceAtLeast(MIN_SCROLL_X)</span><br><span class="line">        onScroll(scrollX, scrollY)</span><br><span class="line">    &#125; else if (!downOnDateLine) &#123;</span><br><span class="line">        scrollY += distanceY.toInt()</span><br><span class="line">        scrollY = scrollY.coerceAtMost(MAX_SCROLL_Y).coerceAtLeast(MIN_SCROLL_Y)</span><br><span class="line">        onScroll(scrollX, scrollY)</span><br><span class="line">    &#125;</span><br><span class="line">    justDown = false</span><br><span class="line">    return true</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用于自动定位的<code>autoSnap</code>方法，依赖<code>Scroller</code>的<code>fling</code>和<code>setFinalX</code>方法，大致如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">private fun autoSnap() &#123;</span><br><span class="line">    // 自适应左右滑动结束位置</span><br><span class="line">    velocityTracker.computeCurrentVelocity(1000)</span><br><span class="line">    if (scrollHorizontal) &#123;</span><br><span class="line">        // 只需要计算水平方向</span><br><span class="line">        scroller.fling(</span><br><span class="line">            scrollX,</span><br><span class="line">            0,</span><br><span class="line">            -velocityTracker.xVelocity.toInt(),</span><br><span class="line">            0,</span><br><span class="line">            Int.MIN_VALUE,</span><br><span class="line">            Int.MAX_VALUE,</span><br><span class="line">            0,</span><br><span class="line">            0</span><br><span class="line">        )</span><br><span class="line">        // 天数取整后乘以dayWidth</span><br><span class="line">        scroller.finalX =</span><br><span class="line">            ((scroller.finalX / dayWidth).roundToInt() * dayWidth).roundToInt()</span><br><span class="line">                .coerceAtMost(MAX_SCROLL_X).coerceAtLeast(MIN_SCROLL_X)</span><br><span class="line">    &#125;</span><br><span class="line">    callOnScrolling(true, true)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="杀割"><a href="#杀割" class="headerlink" title="杀割"></a>杀割</h2><p>除此之外，还有不少实现细节，包括：日程的拖曳，批量创建&#x2F;编辑，添加日历提醒，处理时间冲突的日程等，篇幅原因也就不展开介绍了，有问题评论区交流。</p>
+<p>笔者接下来还会抽时间介绍一下其他三种视图的实现思路和细节，感兴趣的朋友可以关注一下。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/blackfrogxxoo/ScheduleView/tree/master/widget/src/main/java/me/wxc/widget/schedule">再贴一下源码</a>，欢迎star和issues。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/04/05/schedule2/" rel="next" title="【Android自定义View】高仿飞书日历--日视图">
+                  【Android自定义View】高仿飞书日历--日视图 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">blackfrog</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

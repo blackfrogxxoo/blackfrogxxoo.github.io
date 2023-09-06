@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前段时间，笔者陆续发布了“高仿飞书日历”系列的三篇文章： 【Android自定义View】高仿飞书日历（一） – 三日视图 【Android自定义View】高仿飞书日历（二） – 日视图 【Android自定义View】高仿飞书日历（三） – 月视图 今天继续分享最后一个视图：列表视图。先上效果图：  需求确定相对来说，这个视图中的交互逻辑要略微复杂一点。  列表视图包含两个部分：顶部周&amp;#x2F">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android自定义View】高仿飞书日历--列表视图">
+<meta property="og:url" content="http://example.com/2023/05/02/schedule4/index.html">
+<meta property="og:site_name" content="blackfrog">
+<meta property="og:description" content="前段时间，笔者陆续发布了“高仿飞书日历”系列的三篇文章： 【Android自定义View】高仿飞书日历（一） – 三日视图 【Android自定义View】高仿飞书日历（二） – 日视图 【Android自定义View】高仿飞书日历（三） – 月视图 今天继续分享最后一个视图：列表视图。先上效果图：  需求确定相对来说，这个视图中的交互逻辑要略微复杂一点。  列表视图包含两个部分：顶部周&amp;#x2F">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/41e9701833a64f75b24fd93a1da203e7~tplv-k3u1fbpfcp-watermark.image">
+<meta property="article:published_time" content="2023-05-02T04:12:57.000Z">
+<meta property="article:modified_time" content="2023-09-06T06:59:39.113Z">
+<meta property="article:author" content="blackfrog">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/41e9701833a64f75b24fd93a1da203e7~tplv-k3u1fbpfcp-watermark.image">
+
+
+<link rel="canonical" href="http://example.com/2023/05/02/schedule4/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2023/05/02/schedule4/","path":"2023/05/02/schedule4/","title":"【Android自定义View】高仿飞书日历--列表视图"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【Android自定义View】高仿飞书日历--列表视图 | blackfrog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">blackfrog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">慎 敬 勤 恒</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-schedule"><a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E6%B1%82%E7%A1%AE%E5%AE%9A"><span class="nav-number">1.</span> <span class="nav-text">需求确定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A1%86%E6%9E%B6%E5%85%88%E8%A1%8C"><span class="nav-number">2.</span> <span class="nav-text">框架先行</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%83%E5%B1%80-%E6%B8%B2%E6%9F%93%E6%A1%86%E6%9E%B6"><span class="nav-number">2.1.</span> <span class="nav-text">布局&amp;渲染框架</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E9%80%89%E6%8B%A9%E6%8A%80%E6%9C%AF%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%A1%88%EF%BC%9F"><span class="nav-number">2.1.1.</span> <span class="nav-text">怎样选择技术实现方案？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%8E%86%E6%A1%86%E6%9E%B6"><span class="nav-number">2.2.</span> <span class="nav-text">日历框架</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BB%91%E5%8A%A8%E6%89%8B%E5%8A%BF%E5%A4%84%E7%90%86"><span class="nav-number">3.1.</span> <span class="nav-text">滑动手势处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E7%A8%8B%E5%88%97%E8%A1%A8"><span class="nav-number">3.2.</span> <span class="nav-text">日程列表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E7%B1%BB%E5%9E%8BItem"><span class="nav-number">3.2.1.</span> <span class="nav-text">多类型Item</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LoadMore"><span class="nav-number">3.2.2.</span> <span class="nav-text">LoadMore</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%80%E5%89%B2"><span class="nav-number">4.</span> <span class="nav-text">杀割</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">blackfrog</p>
+  <div class="site-description" itemprop="description">blackfrog的个人博客</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/05/02/schedule4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="blackfrog">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blackfrog">
+      <meta itemprop="description" content="blackfrog的个人博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【Android自定义View】高仿飞书日历--列表视图 | blackfrog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【Android自定义View】高仿飞书日历--列表视图
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-05-02 12:12:57" itemprop="dateCreated datePublished" datetime="2023-05-02T12:12:57+08:00">2023-05-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-09-06 14:59:39" itemprop="dateModified" datetime="2023-09-06T14:59:39+08:00">2023-09-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%87%AA%E5%AE%9A%E4%B9%89View/" itemprop="url" rel="index"><span itemprop="name">自定义View</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>前段时间，笔者陆续发布了“高仿飞书日历”系列的三篇文章：</p>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7217425505925054521">【Android自定义View】高仿飞书日历（一） – 三日视图</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7218459472919085114">【Android自定义View】高仿飞书日历（二） – 日视图</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7219557974847029303">【Android自定义View】高仿飞书日历（三） – 月视图</a></p>
+<p>今天继续分享最后一个视图：列表视图。先上效果图：</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/41e9701833a64f75b24fd93a1da203e7~tplv-k3u1fbpfcp-watermark.image" alt="列表视图.gif"></p>
+<h2 id="需求确定"><a href="#需求确定" class="headerlink" title="需求确定"></a>需求确定</h2><p>相对来说，这个视图中的交互逻辑要略微复杂一点。</p>
+<ul>
+<li>列表视图包含两个部分：顶部周&#x2F;月控件，底部日程列表。周&#x2F;月控件显示日期和是否有日程（圆点表示）；日程列表各个Item显示月份、周数、日程等信息。</li>
+<li>周&#x2F;月控件可以左右滑动切换周&#x2F;月；可以通过手势或点击箭头来切换周&#x2F;月模式。</li>
+<li>在周模式下，日程列表可上下滑动；在月模式下，日程列表向上滑动时切换周模式，禁止向下滑动。</li>
+<li>日程列表滑动时选中列表顶部的日期，如果当天有多个日程，滑动过程中日期固定（pin）在列表顶部。</li>
+<li>周&#x2F;月控件中可以通过点击选中某一天，选中时，日程列表自动定位到当天的日程；如果被选中的某天没有日程，则显示“暂无日程安排，点击创建”。</li>
+<li>在周模式下，如果当前选中了某一天（比如：周三），那么左&#x2F;右滑动后选中上&#x2F;下周的周三。</li>
+<li>在月模式下，左&#x2F;右滑动后选中上&#x2F;下月的一号。</li>
+</ul>
+<h2 id="框架先行"><a href="#框架先行" class="headerlink" title="框架先行"></a>框架先行</h2><h3 id="布局-渲染框架"><a href="#布局-渲染框架" class="headerlink" title="布局&amp;渲染框架"></a>布局&amp;渲染框架</h3><p>从效果图和需求来看，控件整体上是一个Header+List的形式，它们之间存在滑动交互。要实现它，我们很直观地想到<code>CoordinatorLayout</code>（协调布局）。很多同学（包括前两年的笔者）在这时，可能就不管三七二十一，开始翻阅<code>CoordinatorLayout</code>的相关博客，Copy&#x2F;Paste代码了。</p>
+<p>请先等一等。</p>
+<p>笔者想和大家聊聊一个可能比较重要的问题。</p>
+<h4 id="怎样选择技术实现方案？"><a href="#怎样选择技术实现方案？" class="headerlink" title="怎样选择技术实现方案？"></a>怎样选择技术实现方案？</h4><p>当我们接到需求时，基于经验去选择了一个实现方案，如果这个方案我们并不是十分熟悉，需要临时去查阅资料，那么这个实现方案很可能不是适合我们的方案。比如当前这个需求，我们如果选择了不太熟悉的<code>CoordinatorLayout</code>，希望Copy代码就能够帮我们快速实现需求时，可能实际操作起来会让我们失望，甚至让我们陷入进退两难的泥淖。<code>CoordinatorLayout</code>是Google官方针对<code>Material Design</code>，基于<code>NestedScrollingParent/2/3</code>实现的一套UI框架，固然它提供了一些常见的UI效果的快速实现，但这些效果本来就是服务于<code>Material Design</code>的，虽然看起来像，但可能和我们的需求差一点点，这种时候我们只能继续去找解决方案，比如怎么自定义<code>Behavior</code>，甚至需要去了解和调试<code>NestedScrollingParent/2/3</code>的各个方法是怎么协调工作。</p>
+<p>一边学习一边调试一边开发需求，渐渐地，我们发现估时不够用了，只能加班、延期或者找产品Battle改需求了。最惨的是，由于学习得很仓促、零碎，脑壳都是昏的，没有系统地理解清楚，即使这次把功能实现了，下次遇到类似的需求又得重新来一遍，心态崩了。。。</p>
+<p>如果我精通<code>CoordinatorLayout</code>和<code>NestedScrollingParent/2/3</code>框架，那么我会毫不犹豫地选择它来实现这个需求，但是我明白自己并不熟悉它，可能我强行基于它们来构建代码，很可能会踩到坑里。</p>
+<p><strong>当笔者去选择实现方案时，大多是以这样的优先级：本人精通的轮子 &gt; 最基础的API &gt; 官方轮子 &gt; 第三方轮子。</strong></p>
+<p>最基础的API虽然实现起来有点麻烦甚至枯燥，但它的优势在于稳定可靠。与其去选择本人不熟悉的<code>CoordinatorLayout</code>和<code>NestedScrollingParent/2/3</code>，还不如退而求其次，选择最笨的方法，用最基础的<code>dispatchTouchEvent/onInterceptTouchEvent/onTouchEvent</code>来处理滑动事宜。</p>
+<p>本系列的<a target="_blank" rel="noopener" href="https://juejin.cn/post/7217425505925054521">第一篇</a>中，笔者在做渲染框架时，选择了继承<code>View</code>的方式，而不是基于<code>ScrollView</code>、<code>RecyclerView</code>之类的滑动控件，也是在这个思路下作出的决定。</p>
+<p>PS：工作中尽量采用这样的思路去提高工作效率和质量，私底下还是需要花时间学习，补齐短板哟～</p>
+<p>言归正传。</p>
+<p>和<a target="_blank" rel="noopener" href="https://juejin.cn/post/7219557974847029303">上一篇</a>的月视图一样，我们选择<code>RecyclerView</code>来实现周&#x2F;月控件；同样的，选择<code>RecyclerView</code>来实现日程列表；然后，将它们组合到一个<code>LinearLayout</code>中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 周/月控件</span><br><span class="line">class FlowHeaderGroup @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null</span><br><span class="line">) : RecyclerView(context, attrs) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 日程列表</span><br><span class="line">class ScheduleFlowView @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null</span><br><span class="line">) : RecyclerView(context, attrs) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">class FlowContainer @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null</span><br><span class="line">) : LinearLayout(context, attrs) &#123;</span><br><span class="line">    private val flowHeader: FlowHeaderGroup</span><br><span class="line">    private val flowHeaderArrow: ImageView</span><br><span class="line">    private val scheduleList: ScheduleFlowView</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>布局&amp;渲染框架至此就搭建完成了。</p>
+<h3 id="日历框架"><a href="#日历框架" class="headerlink" title="日历框架"></a>日历框架</h3><p>在本系列的<a target="_blank" rel="noopener" href="https://juejin.cn/post/7218459472919085114">第二篇</a>中，我们已经定义好了基于<code>ICalenderRender</code>的日历框架了，这里的实现还是老样子：每个控件都去实现<code>ICalendarRender</code>，如果有子render就实现<code>ICalendarParent</code>。以<code>FlowHeaderGroup</code>为例，它和日视图、月视图中的日历控件实现上几乎是一样的，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class FlowHeaderGroup @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null</span><br><span class="line">) : RecyclerView(context, attrs), ICalendarRender, ICalendarParent &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不过也有一点不一样，列表视图中的日历控件，是支持周&#x2F;月模式切换的。简单啊，按照惯例，抽象一个接口为其赋能：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">interface ICalendarModeHolder &#123;</span><br><span class="line">    var calendarMode: CalendarMode</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sealed interface CalendarMode &#123;</span><br><span class="line">    data class MonthMode(</span><br><span class="line">        val expandFraction: Float = 0f,</span><br><span class="line">    ) : CalendarMode</span><br><span class="line"></span><br><span class="line">    object WeekMode : CalendarMode</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>笔者定义了一个<code>ICalendarModeHolder</code>接口，以及一个密封接口：<code>CalendarMode</code>。为啥要用密封接口而不用枚举呢？因为笔者需要用数据驱动UI。周&#x2F;月模式，被我抽象为<code>CalendarMode</code>；而切换的进度，被我抽象为<code>MonthMode</code>下的<code>expandFraction</code>。这样一来，我们进行滑动操作时，对<code>calendarMode</code>赋值就行了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 日历收起时</span><br><span class="line">calendarMode = WeekMode</span><br><span class="line">// 日历展开一半时</span><br><span class="line">calendarMode = MonthMode(0.5f)</span><br><span class="line">// 日历完全展开时</span><br><span class="line">calendarMode = MonthMode(1.0f)</span><br></pre></td></tr></table></figure>
+
+<p>相应的，<code>FlowHeaderGroup</code>去实现<code>ICalendarModeHolder</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">class FlowHeaderGroup @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null</span><br><span class="line">) : RecyclerView(context, attrs), ICalendarRender, ICalendarParent, ICalendarModeHolder &#123;</span><br><span class="line">    ...</span><br><span class="line">    override var calendarMode: CalendarMode by setter(CalendarMode.WeekMode) &#123; oldMode, mode -&gt;</span><br><span class="line">        if (oldMode is CalendarMode.MonthMode &amp;&amp; mode is CalendarMode.MonthMode) &#123;</span><br><span class="line">            onExpandFraction(mode.expandFraction)</span><br><span class="line">        &#125;</span><br><span class="line">        onCalendarModeSet(mode)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    private fun onExpandFraction(fraction: Float) &#123;</span><br><span class="line">        // TODO 更新布局</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    private fun onCalendarModeSet(mode: CalendarMode) &#123;</span><br><span class="line">        // 周/月模式下，子render的样式也会改变</span><br><span class="line">        childRenders.filterIsInstance&lt;ICalendarModeHolder&gt;().forEach &#123;</span><br><span class="line">            it.calendarMode = mode</span><br><span class="line">        &#125;</span><br><span class="line">        // 周/月模式切换时，更新recyclerView的数据源</span><br><span class="line">        if (mode is CalendarMode.WeekMode || (mode as? CalendarMode.MonthMode)?.expandFraction == 0f) &#123;</span><br><span class="line">            adapter?.notifyDataSetChanged()</span><br><span class="line">            scrollToPosition(selectedDayTime.parseIndex())</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此，日历框架也搭建完成了。</p>
+<h2 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h2><h3 id="滑动手势处理"><a href="#滑动手势处理" class="headerlink" title="滑动手势处理"></a>滑动手势处理</h3><p>有的同学对滑动手势处理望而却步，其实只要一点一点地拆解开，手势处理并不困难，无非是在拦截（<code>onInterceptTouchEvent</code>）和消费（<code>onTouchEvent</code>）这两个过程中，判断和处理我们的滑动手势逻辑。</p>
+<p>前面我们已经提到，手势是在父布局（<code>FlowContainer</code>）中处理的。我们要处理的手势状态，主要包括<code>ACTION_DOWN/ACTION_MOVE/ACTION_UP</code>，在这里它们各自的用途是什么呢？</p>
+<ul>
+<li><code>ACTION_DOWN</code>：重置按下状态（<code>justDown</code>），并记录按下的位置（<code>downX/downY</code>）；</li>
+<li><code>ACTION_MOVE</code>：判断滑动方向和方向，进而判断是否拦截；更改周&#x2F;月模式（即：计算并设置<code>calendarMode</code>）；</li>
+<li><code>ACTION_UP</code>：计算松手后的速度和位置，进而确定最终的<code>calendarMode</code>。</li>
+</ul>
+<p>代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br></pre></td><td class="code"><pre><span class="line">class FlowContainer @JvmOverloads constructor(</span><br><span class="line">    context: Context, attrs: AttributeSet? = null</span><br><span class="line">) : LinearLayout(context, attrs), ICalendarRender, ICalendarParent &#123;</span><br><span class="line">    private val flowHeader: FlowHeaderGroup</span><br><span class="line">    private val flowHeaderArrow: ImageView</span><br><span class="line">    private val scheduleList: ScheduleFlowView</span><br><span class="line"></span><br><span class="line">    // ... 省略掉ICalendarRender的实现</span><br><span class="line"></span><br><span class="line">    private var downX: Float = 0f</span><br><span class="line">    private var downY: Float = 0f</span><br><span class="line">    private var justDown: Boolean = false</span><br><span class="line">    private val touchSlop = ViewConfiguration.getTouchSlop()</span><br><span class="line">    private var intercept = false</span><br><span class="line">    private var fromMonthMode = false</span><br><span class="line"></span><br><span class="line">    private val velocityTracker by lazy &#123;</span><br><span class="line">        VelocityTracker.obtain()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Header（日历控件）底部</span><br><span class="line">    private val headerBottom: Int</span><br><span class="line">        get() = (flowHeaderArrow.parent as View).bottom</span><br><span class="line"></span><br><span class="line">    override fun onTouchEvent(event: MotionEvent): Boolean &#123;</span><br><span class="line">        // 在消费事件时，如果不拦截，则调用默认的super.onTouchEvent(event)</span><br><span class="line">        return performInterceptTouchEvent(event) || super.onTouchEvent(event)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean &#123;</span><br><span class="line">        // 在拦截事件时，如果不拦截，则调用默认的super.onInterceptTouchEvent(ev)</span><br><span class="line">        val intercept = performInterceptTouchEvent(ev) || super.onInterceptTouchEvent(ev)</span><br><span class="line">        return intercept</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private fun performInterceptTouchEvent(ev: MotionEvent): Boolean &#123;</span><br><span class="line">        velocityTracker.addMovement(ev)</span><br><span class="line">        return when (ev.action) &#123;</span><br><span class="line">            MotionEvent.ACTION_DOWN -&gt; &#123;</span><br><span class="line">                downX = ev.x</span><br><span class="line">                downY = ev.y</span><br><span class="line">                justDown = true</span><br><span class="line">                false</span><br><span class="line">            &#125;</span><br><span class="line">            MotionEvent.ACTION_MOVE -&gt; &#123;</span><br><span class="line">                // 如果justDown为true，就要先判断是否拦截事件</span><br><span class="line">                if (justDown) &#123;</span><br><span class="line">                    fromMonthMode = flowHeader.calendarMode is CalendarMode.MonthMode</span><br><span class="line">                &#125;</span><br><span class="line">                if (justDown &amp;&amp; (abs(downX - ev.x) &gt; touchSlop || abs(downY - ev.y) &gt; touchSlop)) &#123;</span><br><span class="line">                    val moveUp = abs(downX - ev.x) &lt; abs(downY - ev.y) &amp;&amp; ev.y &lt; downY</span><br><span class="line">                    val moveDown = abs(downX - ev.x) &lt; abs(downY - ev.y) &amp;&amp; ev.y &gt; downY</span><br><span class="line">                    // 根据按下位置，滑动方向和当前的calendarMode来判断是否拦截事件</span><br><span class="line">                    intercept = (moveUp &amp;&amp; flowHeader.calendarMode is CalendarMode.MonthMode)</span><br><span class="line">                            || (moveDown &amp;&amp; downY &lt; headerBottom &amp;&amp; flowHeader.calendarMode is CalendarMode.WeekMode)</span><br><span class="line">                            || (moveDown &amp;&amp; downY &gt; headerBottom &amp;&amp; flowHeader.calendarMode is CalendarMode.MonthMode)</span><br><span class="line">                    justDown = false</span><br><span class="line">                &#125;</span><br><span class="line">                if (intercept) &#123; </span><br><span class="line">                    // 在拦截事件时，calendarMode就在MonthMode(0.0f~1.0f)范围内变化了</span><br><span class="line">                    if (!fromMonthMode &amp;&amp; flowHeader.calendarMode is CalendarMode.WeekMode) &#123;</span><br><span class="line">                        flowHeader.calendarMode = CalendarMode.MonthMode(0f)</span><br><span class="line">                    &#125;</span><br><span class="line">                    val maxHeight = (6 * flowHeaderDayHeight)</span><br><span class="line">                    if (fromMonthMode) &#123;</span><br><span class="line">                        flowHeader.calendarMode = CalendarMode.MonthMode(</span><br><span class="line">                            expandFraction = ((maxHeight - downY + ev.y) / maxHeight).coerceAtLeast(0f).coerceAtMost(1f),</span><br><span class="line">                        )</span><br><span class="line">                    &#125; else &#123;</span><br><span class="line">                        flowHeader.calendarMode = CalendarMode.MonthMode(</span><br><span class="line">                            expandFraction = ((flowHeaderDayHeight - downY + ev.y) / maxHeight).coerceAtLeast(</span><br><span class="line">                                0f</span><br><span class="line">                            ).coerceAtMost(1f),</span><br><span class="line">                        )</span><br><span class="line">                    &#125;</span><br><span class="line">                    true</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    false</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            MotionEvent.ACTION_UP -&gt; &#123;</span><br><span class="line">                velocityTracker.computeCurrentVelocity(1000)</span><br><span class="line">                val velocity = velocityTracker.yVelocity</span><br><span class="line">                // 当速度绝对值大于1000时，最终位置以速度方向为准；否则，以当前位置为准</span><br><span class="line">                if (intercept &amp;&amp; flowHeader.calendarMode is CalendarMode.MonthMode) &#123;</span><br><span class="line">                    val target = if (velocity &lt; -1000) &#123;</span><br><span class="line">                        CalendarMode.WeekMode</span><br><span class="line">                    &#125; else if (velocity &gt; 1000) &#123;</span><br><span class="line">                        CalendarMode.MonthMode(1f)</span><br><span class="line">                    &#125; else if ((flowHeader.calendarMode as CalendarMode.MonthMode).expandFraction &lt; 0.5f) &#123;</span><br><span class="line">                        CalendarMode.WeekMode</span><br><span class="line">                    &#125; else &#123;</span><br><span class="line">                        CalendarMode.MonthMode(1f)</span><br><span class="line">                    &#125;</span><br><span class="line">                    flowHeader.autoSwitchMode(target.apply &#123;</span><br><span class="line">                        flowHeaderArrow.rotation = if (this is CalendarMode.MonthMode) &#123;</span><br><span class="line">                            0f</span><br><span class="line">                        &#125; else &#123;</span><br><span class="line">                            180f</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;)</span><br><span class="line">                &#125;</span><br><span class="line">                intercept = false</span><br><span class="line">                false</span><br><span class="line">            &#125; </span><br><span class="line">            else -&gt; &#123;</span><br><span class="line">                false</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>只要我们明确每一个手势状态下需要做的事情，那么其实手势处理并不困难吧。</p>
+<h3 id="日程列表"><a href="#日程列表" class="headerlink" title="日程列表"></a>日程列表</h3><p>这里的日程列表主要有两个特点：需要显示月、周以及每天的日程数据，即多类型Item；需要上下无限滑动，即需要处理前后的<code>LoadMore</code>。</p>
+<p>很多同学可能都准备引入第三方的<code>RecyclerView</code>轮子了，但前面笔者已经提到<code>官方轮子&gt;第三方轮子</code>了，这里我们采用<code>androidx.recyclerview.widget.ListAdapter</code>来实现。</p>
+<p><code>ListAdapter</code>的核心思想就是<strong>数据驱动UI</strong>，无论列表中的逻辑再复杂，我们也不需要去手动操作<code>adapter</code>中的数据，只需要在我们的<code>ViewModel</code>或<code>Presenter</code>中构建数据集，然后<code>submitList</code>就完事了。并且，Kotlin给我们提供的丰富而强大的集合扩展方法，大大地简化了我们的数据处理，甚至还提高了性能。</p>
+<h4 id="多类型Item"><a href="#多类型Item" class="headerlink" title="多类型Item"></a>多类型Item</h4><p>为了实现多类型，我们先定义一下我们的数据模型（<code>IFlowModel</code>），它也是基于<code>IScheduleModel</code>的，因为我们需要处理排序（<code>Month-&gt;Week-&gt;Day</code>），我们给它添加一个<code>sortValue</code>属性。</p>
+<p>然后三种Item类型分别用<code>MonthText/WeekText/FlowDailySchedules</code>来表示。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">interface IFlowModel : IScheduleModel &#123;</span><br><span class="line">    val sortValue: Long</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">data class MonthText(</span><br><span class="line">    override val beginTime: Long,</span><br><span class="line">) : IFlowModel &#123;</span><br><span class="line">    override val sortValue: Long = beginTime</span><br><span class="line">    override val endTime: Long = beginTime.calendar.lastDayOfMonthTime</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">data class WeekText(</span><br><span class="line">    override val beginTime: Long,</span><br><span class="line">) : IFlowModel &#123;</span><br><span class="line">    override val sortValue: Long = beginTime + 1</span><br><span class="line">    override val endTime: Long = beginTime + 7 * dayMillis</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">data class FlowDailySchedules(</span><br><span class="line">    override val beginTime: Long,</span><br><span class="line">    val schedules: List&lt;IScheduleModel&gt;</span><br><span class="line">) : IFlowModel &#123;</span><br><span class="line">    override val sortValue: Long = beginTime + 2</span><br><span class="line">    override val endTime: Long = beginTime + dayMillis</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>相应的， <code>adapter</code>的实现如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">class ScheduleFlowAdapter : ListAdapter&lt;IFlowModel, VH&gt;(</span><br><span class="line">    object : DiffUtil.ItemCallback&lt;IFlowModel&gt;() &#123;</span><br><span class="line">        override fun areItemsTheSame(</span><br><span class="line">            oldItem: IFlowModel,</span><br><span class="line">            newItem: IFlowModel</span><br><span class="line">        ) = oldItem == newItem</span><br><span class="line"></span><br><span class="line">        override fun areContentsTheSame(</span><br><span class="line">            oldItem: IFlowModel,</span><br><span class="line">            newItem: IFlowModel</span><br><span class="line">        ): Boolean &#123;</span><br><span class="line">            if (oldItem is MonthText &amp;&amp; newItem is MonthText) &#123;</span><br><span class="line">                return oldItem.beginTime == newItem.beginTime</span><br><span class="line">            &#125; else if (oldItem is WeekText &amp;&amp; newItem is WeekText) &#123;</span><br><span class="line">                return oldItem.beginTime == newItem.beginTime</span><br><span class="line">            &#125; else if (oldItem is FlowDailySchedules &amp;&amp; newItem is FlowDailySchedules) &#123;</span><br><span class="line">                return oldItem.beginTime == newItem.beginTime &amp;&amp; oldItem.schedules == newItem.schedules</span><br><span class="line">            &#125;</span><br><span class="line">            return false</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">) &#123;</span><br><span class="line">    private val MONTH_TEXT = 1</span><br><span class="line">    private val WEEK_TEXT = 2</span><br><span class="line">    private val DAILY_TASK = 3</span><br><span class="line">    override fun getItemViewType(position: Int): Int &#123;</span><br><span class="line">        return when (getItem(position)) &#123;</span><br><span class="line">            is MonthText -&gt; MONTH_TEXT</span><br><span class="line">            is WeekText -&gt; WEEK_TEXT</span><br><span class="line">            else -&gt; DAILY_TASK</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH &#123;</span><br><span class="line">        return when (viewType) &#123;</span><br><span class="line">            MONTH_TEXT -&gt; MonthTextVH(parent.context)</span><br><span class="line">            WEEK_TEXT -&gt; WeekTextVH(parent.context)</span><br><span class="line">            else -&gt; DailyTaskVH(</span><br><span class="line">                LayoutInflater.from(parent.context)</span><br><span class="line">                    .inflate(R.layout.flow_daily_item, parent, false)</span><br><span class="line">            )</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun onBindViewHolder(holder: VH, position: Int) &#123;</span><br><span class="line">        holder.onBind(getItem(position))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">abstract class VH(view: View) : RecyclerView.ViewHolder(view) &#123;</span><br><span class="line">    abstract fun onBind(scheduleModel: IScheduleModel)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class MonthTextVH(context: Context) : VH(TextView(context)) &#123;</span><br><span class="line">    // ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class WeekTextVH(context: Context) : VH(TextView(context)) &#123;</span><br><span class="line">    // ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class DailyTaskVH(itemView: View) : VH(itemView) &#123;</span><br><span class="line">    // ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>构建<code>IFlowModel</code>的逻辑看似复杂，其实在数据驱动UI思想和Kotlin语法糖的加持下，可以变得如此简单：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">override var scheduleModels: List&lt;IScheduleModel&gt; by setter(emptyList()) &#123; _, list -&gt;</span><br><span class="line">    generateViewModels(list)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private fun generateViewModels(list: List&lt;IScheduleModel&gt;) &#123;</span><br><span class="line">    // 将日程数据按天分组，然后map为FlowDailySchedules</span><br><span class="line">    list.groupBy &#123; it.beginTime.dDays &#125;.values.map &#123;</span><br><span class="line">        FlowDailySchedules(</span><br><span class="line">            beginTime = beginOfDay(it[0].beginTime).timeInMillis,</span><br><span class="line">            schedules = it.sortedBy &#123; model -&gt; model.beginTime &#125;</span><br><span class="line">        )</span><br><span class="line">    &#125;.toMutableList&lt;IFlowModel&gt;().apply &#123;</span><br><span class="line">        // 然后在列表中插入月（MonthText）和周（WeekText）</span><br><span class="line">        val days = map &#123; it.beginTime.dDays &#125;</span><br><span class="line">        for (time in beginTime..endTime step dayMillis) &#123;</span><br><span class="line">            if ((time.dDays == nowMillis.dDays || time.dDays == focusedDayTime.dDays) &amp;&amp; !days.contains(</span><br><span class="line">                    time.dDays</span><br><span class="line">                )</span><br><span class="line">            ) &#123;</span><br><span class="line">                add(</span><br><span class="line">                    FlowDailySchedules(</span><br><span class="line">                        beginTime = time,</span><br><span class="line">                        schedules = emptyList()</span><br><span class="line">                    )</span><br><span class="line">                )</span><br><span class="line">            &#125;</span><br><span class="line">            if (time.dayOfMonth == 1) &#123;</span><br><span class="line">                add(MonthText(time))</span><br><span class="line">            &#125;</span><br><span class="line">            if (time.dayOfWeek == Calendar.SUNDAY) &#123;</span><br><span class="line">                add(WeekText(time))</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.sortedBy &#123; it.sortValue &#125;.apply &#123; // 最后排序后submitList</span><br><span class="line">        flowAdapter.submitList(this)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="LoadMore"><a href="#LoadMore" class="headerlink" title="LoadMore"></a>LoadMore</h4><p>看过本系列前面几篇的同学应该记得，咱们的日历框架是基于<code>ITimeRangeHolder</code>的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">interface ITimeRangeHolder &#123;</span><br><span class="line">    val beginTime: Long</span><br><span class="line">    val endTime: Long</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个<code>beginTime</code>和<code>endTime</code>就确定了日历控件的显示范围。那么对于日程列表来说，去更新<code>beginTime</code>和<code>endTime</code>，就能更新日程列表的前后长度，也就实现了LoadMore的效果了。这里仍然是数据驱动UI的体现。</p>
+<p>在以下代码中，我们通过监听<code>RecyclerView</code>的滑动，得到当前是否快要滑动到顶&#x2F;底部，然后减小<code>beginTime</code>&#x2F;增大<code>endTime</code>就可以了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">addOnScrollListener(object : OnScrollListener() &#123;</span><br><span class="line">    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) &#123;</span><br><span class="line">        super.onScrolled(recyclerView, dx, dy)</span><br><span class="line">        val llm = recyclerView.layoutManager as LinearLayoutManager</span><br><span class="line">        val firstVisible = llm.findFirstVisibleItemPosition()</span><br><span class="line">        val lastVisible = llm.findLastVisibleItemPosition()</span><br><span class="line">        checkLoadMore(firstVisible, lastVisible)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">private fun checkLoadMore(firstVisible: Int, lastVisible: Int) &#123;</span><br><span class="line">    if (firstVisible &lt; 10) &#123;</span><br><span class="line">        beginTime = beginTime.calendar.apply &#123;</span><br><span class="line">            add(Calendar.YEAR, -1)</span><br><span class="line">        &#125;.timeInMillis</span><br><span class="line">        if (!loadingMore) &#123;</span><br><span class="line">            loadingMore = true</span><br><span class="line">            reloadSchedulesFromProvider()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else if (lastVisible &gt; ((adapter?.itemCount ?: 0) - 10).coerceAtLeast(0)) &#123;</span><br><span class="line">        endTime = endTime.calendar.apply &#123;</span><br><span class="line">            add(Calendar.YEAR, 1)</span><br><span class="line">        &#125;.timeInMillis</span><br><span class="line">        if (!loadingMore) &#123;</span><br><span class="line">            loadingMore = true</span><br><span class="line">            reloadSchedulesFromProvider()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>更新<code>beginTime/endTime</code>后，我们调用<code>reloadSchedulesFromProvider()</code>方法更新数据(<code>scheduleModels</code>)，然后调用前面的<code>generateViewModels</code>方法就行了。</p>
+<h2 id="杀割"><a href="#杀割" class="headerlink" title="杀割"></a>杀割</h2><p>更多的实现细节，这里就不展开介绍了，想要详细了解请<a target="_blank" rel="noopener" href="https://github.com/blackfrogxxoo/ScheduleView">移步源码</a>。</p>
+<p>整个“高仿飞书日历”项目的构思和实现心得，其实总结起来就这么几点：</p>
+<ul>
+<li>坚持数据驱动UI思想</li>
+<li>面向抽象构建代码</li>
+<li>掌握最基本的布局、绘制、滑动手势处理</li>
+<li>培养选择技术实现方案的思路</li>
+<li>Kotlin赛高！</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/04/08/schedule3/" rel="prev" title="【Android自定义View】高仿飞书日历--月视图">
+                  <i class="fa fa-angle-left"></i> 【Android自定义View】高仿飞书日历--月视图
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/09/04/first/" rel="next" title="拒绝代码PUA，优雅地迭代业务代码">
+                  拒绝代码PUA，优雅地迭代业务代码 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">blackfrog</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

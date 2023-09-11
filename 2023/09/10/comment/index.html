@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本文分享了RecyclerView的ListAdapter，以及一些简单高效地处理数据和抽象业务的心得体会。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用一个RecyclerView实现抖音二级评论">
+<meta property="og:url" content="http://example.com/2023/09/10/comment/index.html">
+<meta property="og:site_name" content="blackfrog">
+<meta property="og:description" content="本文分享了RecyclerView的ListAdapter，以及一些简单高效地处理数据和抽象业务的心得体会。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/eae12bcb10bc4a519fe3821e969e6b27~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=270&h=600&s=947639&e=gif&f=247&b=fbfaf7">
+<meta property="article:published_time" content="2023-09-10T12:34:22.000Z">
+<meta property="article:modified_time" content="2023-09-11T02:10:18.630Z">
+<meta property="article:author" content="blackfrog">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="抽象">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/eae12bcb10bc4a519fe3821e969e6b27~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=270&h=600&s=947639&e=gif&f=247&b=fbfaf7">
+
+
+<link rel="canonical" href="http://example.com/2023/09/10/comment/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2023/09/10/comment/","path":"2023/09/10/comment/","title":"用一个RecyclerView实现抖音二级评论"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>用一个RecyclerView实现抖音二级评论 | blackfrog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">blackfrog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">慎 敬 勤 恒</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-schedule"><a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E6%B1%82%E6%8B%86%E5%88%86"><span class="nav-number">1.</span> <span class="nav-text">需求拆分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">技术选型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95RecyclerView-%E5%A4%9AItemType-ListAdapter"><span class="nav-number">2.1.</span> <span class="nav-text">单RecyclerView + 多ItemType + ListAdapter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="nav-number">2.2.</span> <span class="nav-text">数据源的转换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">3.</span> <span class="nav-text">实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MainActivity"><span class="nav-number">3.1.</span> <span class="nav-text">MainActivity</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CommentAdapter"><span class="nav-number">3.2.</span> <span class="nav-text">CommentAdapter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ViewHolder"><span class="nav-number">3.3.</span> <span class="nav-text">ViewHolder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Recucer"><span class="nav-number">3.4.</span> <span class="nav-text">Recucer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#data-class"><span class="nav-number">3.5.</span> <span class="nav-text">data class</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">4.</span> <span class="nav-text">结语</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">blackfrog</p>
+  <div class="site-description" itemprop="description">blackfrog的个人博客</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/09/10/comment/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="blackfrog">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="blackfrog">
+      <meta itemprop="description" content="blackfrog的个人博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="用一个RecyclerView实现抖音二级评论 | blackfrog">
+      <meta itemprop="description" content="本文分享了RecyclerView的ListAdapter，以及一些简单高效地处理数据和抽象业务的心得体会。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          用一个RecyclerView实现抖音二级评论
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-09-10 20:34:22" itemprop="dateCreated datePublished" datetime="2023-09-10T20:34:22+08:00">2023-09-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-09-11 10:10:18" itemprop="dateModified" datetime="2023-09-11T10:10:18+08:00">2023-09-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E4%B8%9A%E5%8A%A1/" itemprop="url" rel="index"><span itemprop="name">业务</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">本文分享了RecyclerView的ListAdapter，以及一些简单高效地处理数据和抽象业务的心得体会。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><meta name="referrer" content="no-referrer" />
+
+<p>前一阵，看到一位掘友分享了一篇文章：<a target="_blank" rel="noopener" href="https://juejin.cn/post/7271991667246694437">Android简单的两级评论功能实现</a>，看得出来，是一位Android萌新记录的学习过程。我当时还留了一条建议：</p>
+<blockquote>
+<p>建议用单RecyclerView+多ItemType+ListAdapter实现，保持UI层的清洁，把逻辑处理集中在数据源的转换上，比如展开&#x2F;收起二级评论可以利用flatMap和groupBy等操作符转换</p>
+</blockquote>
+<p>其实我之前在工作中，也曾经做过类似抖音的二级评论的需求。但那个时候自己很菜，还没有用过Kotlin，协程更是没有接触过，这个功能和另一位同事一起开发了两周才搞定。</p>
+<p>刚好这个周末没啥事，就想着写一个简单实现抖音二级评论基本功能的Demo。一方面，想试试自己现在开发这样一个需求会是什么样的体验；另一方面，也算是给Android掘友，尤其是萌新，分享一点业务开发的心得。</p>
+<p>先上个效果图（没有UI，将就看吧），写代码的整个过程花了4个小时左右，相比当初自己开发需求已经快了很多了哈。</p>
+<blockquote>
+<p>给产品估个两天时间，摸一天半的鱼不过分吧（手动斜眼）</p>
+</blockquote>
+<p><img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/eae12bcb10bc4a519fe3821e969e6b27~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=270&h=600&s=947639&e=gif&f=247&b=fbfaf7" alt="评论.gif"></p>
+<h2 id="需求拆分"><a href="#需求拆分" class="headerlink" title="需求拆分"></a>需求拆分</h2><p>这种大家常用的评论功能其实也就没啥好拆分的了，简单列一下：</p>
+<ul>
+<li>默认展示一级评论和二级评论中的热评，可以上拉加载更多。</li>
+<li>二级评论超过两条时，可以点击展开加载更多二级评论，展开后可以点击收起折叠到初始状态。</li>
+<li>回复评论后插入到该评论的下方。</li>
+</ul>
+<h2 id="技术选型"><a href="#技术选型" class="headerlink" title="技术选型"></a>技术选型</h2><p>前面我在给掘友的评论中，也提到了技术选型的要点：</p>
+<h3 id="单RecyclerView-多ItemType-ListAdapter"><a href="#单RecyclerView-多ItemType-ListAdapter" class="headerlink" title="单RecyclerView + 多ItemType + ListAdapter"></a>单RecyclerView + 多ItemType + ListAdapter</h3><p>这是基本的UI框架。</p>
+<p>为啥要只用一个<code>RecyclerView</code>？最重要的原因，就是在<code>RecyclerView</code>中嵌套同方向<code>RecyclerView</code>，会有性能问题和滑动冲突。其次，当下<strong>声明式UI</strong>正是各方大佬推崇的最佳开发实践之一，虽然我们没有使用声明式UI基础上开发的<code>Compose</code>&#x2F;<code>Flutter</code>技术，但其构建思想仍然对我们的开发具有一定的指导意义。我猜测，<code>androidx.recyclerview.widget.ListAdapter</code>可能也是响应声明式UI号召的一个针对<code>RecyclerView</code>的解决方案吧。</p>
+<h3 id="数据源的转换"><a href="#数据源的转换" class="headerlink" title="数据源的转换"></a>数据源的转换</h3><p><strong>数据驱动UI！</strong></p>
+<p>既然选用了<code>ListAdapter</code>，那么我们就不应该再手动操作<code>adapter</code>的数据，再用各种<code>notifyXxx</code>方法来更新列表了。更提倡的做法是，基于<code>data class</code>的<strong>浅拷贝</strong>，用<code>Collection</code>操作符对数据源的进行转换，然后将转换后的数据提交到<code>adapter</code>。为了提高数据转换性能，我们可以基于协程进行异步处理。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">    start[原List] --异步数据处理--&gt; 新List --&gt; stop[ListAdapter.submitList]</span><br><span class="line">    stop --&gt; start</span><br></pre></td></tr></table></figure>
+
+
+<p><strong>要点：</strong></p>
+<ul>
+<li><strong>浅拷贝</strong></li>
+</ul>
+<p>低成本生成一个全新的对象，以保证数据源的安全性。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">Foo</span>(<span class="keyword">val</span> id: <span class="built_in">Int</span>, <span class="keyword">val</span> content: String)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> foo1 = Foo(<span class="number">0</span>, <span class="string">&quot;content&quot;</span>)</span><br><span class="line"><span class="keyword">val</span> foo2 = foo1.copy(content = <span class="string">&quot;updated content&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong><code>Collection</code>操作符</strong></li>
+</ul>
+<p><code>Kotlin</code>中提供了大量非常好用的<code>Collection</code>操作符，能灵活使用的话，非常有利于咱们向声明式UI转型。</p>
+<p>前面我提到了<code>groupBy</code>和<code>flatMap</code>这两个操作符。怎么使用呢？</p>
+<p>以这个需求为例，我们需要显示一级评论、二级评论和展开更多按钮，想要分别用一个<code>data class</code>来表示，但是后端返回的数据中又没有“展开更多”这样的数据，就可以这样处理：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从后端获取的数据List，包括有一级评论和二级评论，二级评论的parentId就等于一级评论的id</span></span><br><span class="line"><span class="keyword">val</span> loaded: List&lt;CommentItem&gt; = ... </span><br><span class="line"><span class="keyword">val</span> grouped = loaded.groupBy &#123; </span><br><span class="line">    <span class="comment">// (1) 以一级评论的id为key，把源list分组为一个Map&lt;Int, List&lt;CommentItem&gt;&gt;</span></span><br><span class="line">    (it <span class="keyword">as</span>? CommentItem.Level1)?.id ?: (it <span class="keyword">as</span>? CommentItem.Level2)?.parentId</span><br><span class="line">    ?: <span class="keyword">throw</span> IllegalArgumentException(<span class="string">&quot;invalid comment item&quot;</span>)</span><br><span class="line">&#125;.flatMap &#123; </span><br><span class="line">    <span class="comment">// (2) 展开前面的map，展开时就可以在每级一级评论的二级评论后面添加一个控制“展开更多”的Item</span></span><br><span class="line">    it.value + CommentItem.Folding(</span><br><span class="line">        parentId = it.key,</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>异步处理</strong></li>
+</ul>
+<p>前面我们描述的数据源的转换过程，在Kotlin中，可以简单地被抽象为一个操作：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">List&lt;CommentItem&gt;.() -&gt; List&lt;CommentItem&gt;</span><br></pre></td></tr></table></figure>
+<p>对于这个需求，数据源转换操作就包括了：分页加载，展开二级评论，收起二级评论，回复评论等。按照惯例，抽象一个接口出来。既然我们要在协程框架下进行异步处理，需要给这个操作加一个<code>suspend</code>关键字。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Reducer</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> reduce: <span class="keyword">suspend</span> List&lt;CommentItem&gt;.() -&gt; List&lt;CommentItem&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为啥我给这个接口取名<code>Reducer</code>？如果你知道它的意思，说明你可能已经了解过<code>MVI</code>架构了；如果你还不知道它的意思，说明你可以去了解一下<code>MVI</code>了。哈哈！</p>
+<p>不过今天不谈<code>MVI</code>，对于这样一个小Demo，完全没必要上架构。但是，优秀架构为我们提供的代码构建思路是有必要的！</p>
+<p><strong>这个<code>Reducer</code>，在这里就算是咱们的小小业务架构了。</strong></p>
+<ul>
+<li><strong>异步2.0</strong></li>
+</ul>
+<p>前面谈到<strong>异步</strong>，我们印象中可能主要是网络请求、数据库&#x2F;文件读写等IO操作。</p>
+<p>这里我想要延伸一下。</p>
+<p><code>Activity</code>的<code>startActivityForResult</code>&#x2F;<code>onActivityResult</code>，<code>Dialog</code>的拉起&#x2F;回调，其实也可以看着是异步操作。异步与是否在主线程无关，而在于是否是实时返回结果。毕竟在主线程上跳转到其他页面，获取数据再回调回去使用，也是花了时间的啊。所以在协程的框架下，有一个更适合描述异步的词语：**挂起(<code>suspend</code>)**。</p>
+<p>说这有啥用呢？仍以这个需求为例，我们点击“回复”后拉起一个对话框，输入评论确认后回调给<code>Activity</code>，再进行网络请求：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">class ReplyDialog(context: Context, private val callback: (String) -&gt; Unit) : Dialog(context) &#123;</span><br><span class="line">    override fun onCreate(savedInstanceState: Bundle?) &#123;</span><br><span class="line">        super.onCreate(savedInstanceState)</span><br><span class="line">        setContentView(R.layout.dialog_reply)</span><br><span class="line">        val editText = findViewById&lt;EditText&gt;(R.id.content)</span><br><span class="line">        findViewById&lt;Button&gt;(R.id.submit).setOnClickListener &#123;</span><br><span class="line">            if (editText.text.toString().isBlank()) &#123;</span><br><span class="line">                Toast.makeText(context, &quot;评论不能为空&quot;, Toast.LENGTH_SHORT).show()</span><br><span class="line">                return@setOnClickListener</span><br><span class="line">            &#125;</span><br><span class="line">            callback.invoke(editText.text.toString())</span><br><span class="line">            dismiss()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">suspend List&lt;CommentItem&gt;.() -&gt; List&lt;CommentItem&gt; = &#123;</span><br><span class="line">    val content = withContext(Dispatchers.Main) &#123;</span><br><span class="line">        // 由于整个转换过程是在IO线程进行，Dialog相关操作需要转换到主线程操作</span><br><span class="line">        suspendCoroutine &#123; continuation -&gt;</span><br><span class="line">            ReplyDialog(context) &#123;</span><br><span class="line">                continuation.resume(it)</span><br><span class="line">            &#125;.show()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...进行其他操作，如网络请求</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>技术选型，或者说技术框架，咱们就实现了，甚至还谈到了部分细节了。接下来进行完整实现细节分享。</p>
+<h2 id="实现细节"><a href="#实现细节" class="headerlink" title="实现细节"></a>实现细节</h2><h3 id="MainActivity"><a href="#MainActivity" class="headerlink" title="MainActivity"></a><code>MainActivity</code></h3><p>基于上一章节的技术选型，咱们的<code>MainActivity</code>的完整代码就是这样了。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MainActivity</span> : <span class="type">AppCompatActivity</span>() &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">lateinit</span> <span class="keyword">var</span> commentAdapter: CommentAdapter</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onCreate</span><span class="params">(savedInstanceState: <span class="type">Bundle</span>?)</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState)</span><br><span class="line">        setContentView(R.layout.activity_main)</span><br><span class="line">        <span class="keyword">val</span> recyclerView = findViewById&lt;RecyclerView&gt;(R.id.recyclerView)</span><br><span class="line">        commentAdapter = CommentAdapter &#123;</span><br><span class="line">            lifecycleScope.launchWhenResumed &#123;</span><br><span class="line">                <span class="keyword">val</span> newList = withContext(Dispatchers.IO) &#123;</span><br><span class="line">                    reduce.invoke(commentAdapter.currentList)</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">val</span> firstSubmit = commentAdapter.itemCount == <span class="number">1</span></span><br><span class="line">                commentAdapter.submitList(newList) &#123;</span><br><span class="line">                    <span class="comment">// 这里是为了处理submitList后，列表滑动位置不对的问题</span></span><br><span class="line">                    <span class="keyword">if</span> (firstSubmit) &#123;</span><br><span class="line">                        recyclerView.scrollToPosition(<span class="number">0</span>)</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span><span class="symbol">@CommentAdapter</span> <span class="keyword">is</span> FoldReducer) &#123;</span><br><span class="line">                        <span class="keyword">val</span> index = commentAdapter.currentList.indexOf(<span class="keyword">this</span><span class="symbol">@CommentAdapter</span>.folding)</span><br><span class="line">                        recyclerView.scrollToPosition(index)</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        recyclerView.adapter = commentAdapter</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>给<code>RecyclerView</code>设置一个<code>CommentAdapter</code>就行了，回调时也只需要把回调过来的<code>Reducer</code>调度到IO线程跑一下，得到新的数据<code>list</code>再<code>submitList</code>就完事了。如果不是<code>submitList</code>后有列表的定位问题，代码还能更精简。<strong>如果有知道更好的解决办法的朋友，麻烦留言分享一下，感谢！</strong></p>
+<h3 id="CommentAdapter"><a href="#CommentAdapter" class="headerlink" title="CommentAdapter"></a><code>CommentAdapter</code></h3><p>别以为我把逻辑处理扔到<code>adapter</code>中了哦！</p>
+<p><code>Adapter</code>和<code>ViewHolder</code>都是UI组件，我们也需要尽量保持它们的清洁。</p>
+<p>贴一下<code>CommentAdapter</code>的</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">CommentAdapter</span>(<span class="keyword">private</span> <span class="keyword">val</span> reduceBlock: Reducer.() -&gt; <span class="built_in">Unit</span>) :</span><br><span class="line">    ListAdapter&lt;CommentItem, VH&gt;(<span class="keyword">object</span> : DiffUtil.ItemCallback&lt;CommentItem&gt;() &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">areItemsTheSame</span><span class="params">(oldItem: <span class="type">CommentItem</span>, newItem: <span class="type">CommentItem</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> oldItem.id == newItem.id</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">areContentsTheSame</span><span class="params">(oldItem: <span class="type">CommentItem</span>, newItem: <span class="type">CommentItem</span>)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (oldItem::<span class="keyword">class</span>.java != newItem::<span class="keyword">class</span>.java) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">            <span class="keyword">return</span> (oldItem <span class="keyword">as</span>? CommentItem.Level1) == (newItem <span class="keyword">as</span>? CommentItem.Level1)</span><br><span class="line">                    || (oldItem <span class="keyword">as</span>? CommentItem.Level2) == (newItem <span class="keyword">as</span>? CommentItem.Level2)</span><br><span class="line">                    || (oldItem <span class="keyword">as</span>? CommentItem.Folding) == (newItem <span class="keyword">as</span>? CommentItem.Folding)</span><br><span class="line">                    || (oldItem <span class="keyword">as</span>? CommentItem.Loading) == (newItem <span class="keyword">as</span>? CommentItem.Loading)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">init</span> &#123;</span><br><span class="line">        submitList(listOf(CommentItem.Loading(page = <span class="number">0</span>, CommentItem.Loading.State.IDLE)))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onCreateViewHolder</span><span class="params">(parent: <span class="type">ViewGroup</span>, viewType: <span class="type">Int</span>)</span></span>: VH &#123;</span><br><span class="line">        <span class="keyword">val</span> inflater = LayoutInflater.from(parent.context)</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">when</span> (viewType) &#123;</span><br><span class="line">            TYPE_LEVEL1 -&gt; Level1VH(</span><br><span class="line">                inflater.inflate(R.layout.item_comment_level_1, parent, <span class="literal">false</span>),</span><br><span class="line">                reduceBlock</span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line">            TYPE_LEVEL2 -&gt; Level2VH(</span><br><span class="line">                inflater.inflate(R.layout.item_comment_level_2, parent, <span class="literal">false</span>),</span><br><span class="line">                reduceBlock</span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line">            TYPE_LOADING -&gt; LoadingVH(</span><br><span class="line">                inflater.inflate(</span><br><span class="line">                    R.layout.item_comment_loading,</span><br><span class="line">                    parent,</span><br><span class="line">                    <span class="literal">false</span></span><br><span class="line">                ), reduceBlock</span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line">            <span class="keyword">else</span> -&gt; FoldingVH(</span><br><span class="line">                inflater.inflate(R.layout.item_comment_folding, parent, <span class="literal">false</span>),</span><br><span class="line">                reduceBlock</span><br><span class="line">            )</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onBindViewHolder</span><span class="params">(holder: <span class="type">VH</span>, position: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        holder.onBind(getItem(position))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getItemViewType</span><span class="params">(position: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">when</span> (getItem(position)) &#123;</span><br><span class="line">            <span class="keyword">is</span> CommentItem.Level1 -&gt; TYPE_LEVEL1</span><br><span class="line">            <span class="keyword">is</span> CommentItem.Level2 -&gt; TYPE_LEVEL2</span><br><span class="line">            <span class="keyword">is</span> CommentItem.Loading -&gt; TYPE_LOADING</span><br><span class="line">            <span class="keyword">else</span> -&gt; TYPE_FOLDING</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">companion</span> <span class="keyword">object</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> TYPE_LEVEL1 = <span class="number">0</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> TYPE_LEVEL2 = <span class="number">1</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> TYPE_FOLDING = <span class="number">2</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="keyword">val</span> TYPE_LOADING = <span class="number">3</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，就是一个简单的多<code>ItemType</code>的<code>Adapter</code>，唯一需要注意的就是，在<code>Activity</code>里传入的<code>reduceBlock: Reducer.() -&gt; Unit</code>，也要传给每个<code>ViewHolder</code>。</p>
+<h3 id="ViewHolder"><a href="#ViewHolder" class="headerlink" title="ViewHolder"></a><code>ViewHolder</code></h3><p>篇幅原因，就只贴其中一个：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">VH</span>(itemView: View, <span class="keyword">protected</span> <span class="keyword">val</span> reduceBlock: Reducer.() -&gt; <span class="built_in">Unit</span>) :</span><br><span class="line">    ViewHolder(itemView) &#123;</span><br><span class="line">    <span class="keyword">abstract</span> <span class="function"><span class="keyword">fun</span> <span class="title">onBind</span><span class="params">(item: <span class="type">CommentItem</span>)</span></span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Level1VH</span>(itemView: View, reduceBlock: Reducer.() -&gt; <span class="built_in">Unit</span>) : VH(itemView, reduceBlock) &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> avatar: TextView = itemView.findViewById(R.id.avatar)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> username: TextView = itemView.findViewById(R.id.username)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> content: TextView = itemView.findViewById(R.id.content)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> reply: TextView = itemView.findViewById(R.id.reply)</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onBind</span><span class="params">(item: <span class="type">CommentItem</span>)</span></span> &#123;</span><br><span class="line">        avatar.text = item.userName.subSequence(<span class="number">0</span>, <span class="number">1</span>)</span><br><span class="line">        username.text = item.userName</span><br><span class="line">        content.text = item.content</span><br><span class="line">        reply.setOnClickListener &#123;</span><br><span class="line">            reduceBlock.invoke(ReplyReducer(item, itemView.context))</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也是很简单，唯一特别一点的处理，就是在<code>onClickListener</code>中，让<code>reduceBlock</code>去<code>invoke</code>一个<code>Reducer</code>实现。</p>
+<h3 id="Recucer"><a href="#Recucer" class="headerlink" title="Recucer"></a><code>Recucer</code></h3><p>刚才在技术选型章节，已经提前展示了“回复评论”这一操作的<code>Reducer</code>实现了，其他<code>Reducer</code>也差不多，比如展开评论操作，也封装在一个<code>Reducer</code>实现<code>ExpandReducer</code>中，以下是完整代码：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">ExpandReducer</span>(</span><br><span class="line">    <span class="keyword">val</span> folding: CommentItem.Folding,</span><br><span class="line">) : Reducer &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> mapper <span class="keyword">by</span> lazy &#123; Entity2ItemMapper() &#125;</span><br><span class="line">    <span class="keyword">override</span> <span class="keyword">val</span> reduce: <span class="keyword">suspend</span> List&lt;CommentItem&gt;.() -&gt; List&lt;CommentItem&gt; = &#123;</span><br><span class="line">        <span class="keyword">val</span> foldingIndex = indexOf(folding)</span><br><span class="line">        <span class="keyword">val</span> loaded =</span><br><span class="line">            FakeApi.getLevel2Comments(folding.parentId, folding.page, folding.pageSize).getOrNull()</span><br><span class="line">                ?.map(mapper::invoke) ?: emptyList()</span><br><span class="line">        toMutableList().apply &#123;</span><br><span class="line">            addAll(foldingIndex, loaded)</span><br><span class="line">        &#125;.map &#123;</span><br><span class="line">            <span class="keyword">if</span> (it <span class="keyword">is</span> CommentItem.Folding &amp;&amp; it == folding) &#123;</span><br><span class="line">                <span class="keyword">val</span> state =</span><br><span class="line">                    <span class="keyword">if</span> (it.page &gt; <span class="number">5</span>) CommentItem.Folding.State.LOADED_ALL <span class="keyword">else</span> CommentItem.Folding.State.IDLE</span><br><span class="line">                it.copy(page = it.page + <span class="number">1</span>, state = state)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                it</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>短短一段代码，我们做了这些事：</p>
+<ul>
+<li>请求网络数据<code>Entity list</code>（假数据）</li>
+<li>通过<code>mapper</code>转换成显示用的<code>Item</code>数据list</li>
+<li>将<code>Item</code>数据插入到“展开更多”按钮前面</li>
+<li>最后，根据二级评论加载是否完成，将“展开更多”的状态置为<code>IDLE</code>或<code>LOADED_ALL</code></li>
+</ul>
+<p><strong>一个字：丝滑！</strong></p>
+<p>用于转换<code>Entity</code>到<code>Item</code>的<code>mapper</code>的代码也贴一下吧：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 抽象</span></span><br><span class="line"><span class="keyword">typealias</span> Mapper&lt;I, O&gt; = (I) -&gt; O</span><br><span class="line"><span class="comment">// 实现</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Entity2ItemMapper</span> : <span class="type">Mapper</span>&lt;<span class="type">ICommentEntity, CommentItem</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">invoke</span><span class="params">(entity: <span class="type">ICommentEntity</span>)</span></span>: CommentItem &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">when</span> (entity) &#123;</span><br><span class="line">            <span class="keyword">is</span> CommentLevel1 -&gt; &#123;</span><br><span class="line">                CommentItem.Level1(</span><br><span class="line">                    id = entity.id,</span><br><span class="line">                    content = entity.content,</span><br><span class="line">                    userId = entity.userId,</span><br><span class="line">                    userName = entity.userName,</span><br><span class="line">                    level2Count = entity.level2Count,</span><br><span class="line">                )</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">is</span> CommentLevel2 -&gt; &#123;</span><br><span class="line">                CommentItem.Level2(</span><br><span class="line">                    id = entity.id,</span><br><span class="line">                    content = <span class="keyword">if</span> (entity.hot) entity.content.makeHot() <span class="keyword">else</span> entity.content,</span><br><span class="line">                    userId = entity.userId,</span><br><span class="line">                    userName = entity.userName,</span><br><span class="line">                    parentId = entity.parentId,</span><br><span class="line">                )</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">else</span> -&gt; &#123;</span><br><span class="line">                <span class="keyword">throw</span> IllegalArgumentException(<span class="string">&quot;not implemented entity: <span class="variable">$entity</span>&quot;</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>细心的朋友可以看到，在这里我顺便也将热评也处理了：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (entity.hot) entity.content.makeHot() <span class="keyword">else</span> entity.content</span><br></pre></td></tr></table></figure>
+
+<p><code>makeHot()</code>就是用<code>buildSpannedString</code>来实现的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">fun CharSequence.makeHot(): CharSequence &#123;</span><br><span class="line">    return buildSpannedString &#123;</span><br><span class="line">        color(Color.RED) &#123;</span><br><span class="line">            append(&quot;热评  &quot;)</span><br><span class="line">        &#125;</span><br><span class="line">        append(this@makeHot)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里可以提一句：<strong>尽量用<code>CharSequence</code>来抽象表示字符串，可以方便我们灵活地使用<code>Span</code>来减少UI代码。</strong></p>
+<h3 id="data-class"><a href="#data-class" class="headerlink" title="data class"></a><code>data class</code></h3><p>也贴一下相关的数据实体得了。</p>
+<ul>
+<li><p>网络数据（假数据）</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">ICommentEntity</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> id: <span class="built_in">Int</span></span><br><span class="line">    <span class="keyword">val</span> content: CharSequence</span><br><span class="line">    <span class="keyword">val</span> userId: <span class="built_in">Int</span></span><br><span class="line">    <span class="keyword">val</span> userName: CharSequence</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">CommentLevel1</span>(</span><br><span class="line">    <span class="keyword">override</span> <span class="keyword">val</span> id: <span class="built_in">Int</span>,</span><br><span class="line">    <span class="keyword">override</span> <span class="keyword">val</span> content: CharSequence,</span><br><span class="line">    <span class="keyword">override</span> <span class="keyword">val</span> userId: <span class="built_in">Int</span>,</span><br><span class="line">    <span class="keyword">override</span> <span class="keyword">val</span> userName: CharSequence,</span><br><span class="line">    <span class="keyword">val</span> level2Count: <span class="built_in">Int</span>,</span><br><span class="line">) : ICommentEntity</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>RecyclerView Item</code>数据</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="keyword">interface</span> <span class="title class_">CommentItem</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> id: <span class="built_in">Int</span></span><br><span class="line">    <span class="keyword">val</span> content: CharSequence</span><br><span class="line">    <span class="keyword">val</span> userId: <span class="built_in">Int</span></span><br><span class="line">    <span class="keyword">val</span> userName: CharSequence</span><br><span class="line"></span><br><span class="line">    <span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">Loading</span>(</span><br><span class="line">        <span class="keyword">val</span> page: <span class="built_in">Int</span> = <span class="number">0</span>,</span><br><span class="line">        <span class="keyword">val</span> state: State = State.LOADING</span><br><span class="line">    ) : CommentItem &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> id: <span class="built_in">Int</span>=<span class="number">0</span></span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> content: CharSequence</span><br><span class="line">            <span class="keyword">get</span>() = <span class="keyword">when</span>(state) &#123;</span><br><span class="line">                State.LOADED_ALL -&gt; <span class="string">&quot;全部加载&quot;</span></span><br><span class="line">                <span class="keyword">else</span> -&gt; <span class="string">&quot;加载中...&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> userId: <span class="built_in">Int</span>=<span class="number">0</span></span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> userName: CharSequence=<span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">enum</span> <span class="keyword">class</span> <span class="title class_">State</span> &#123;</span><br><span class="line">            IDLE, LOADING, LOADED_ALL</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">Level1</span>(</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> id: <span class="built_in">Int</span>,</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> content: CharSequence,</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> userId: <span class="built_in">Int</span>,</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> userName: CharSequence,</span><br><span class="line">        <span class="keyword">val</span> level2Count: <span class="built_in">Int</span>,</span><br><span class="line">    ) : CommentItem</span><br><span class="line"></span><br><span class="line">    <span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">Level2</span>(</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> id: <span class="built_in">Int</span>,</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> content: CharSequence,</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> userId: <span class="built_in">Int</span>,</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> userName: CharSequence,</span><br><span class="line">        <span class="keyword">val</span> parentId: <span class="built_in">Int</span>,</span><br><span class="line">    ) : CommentItem</span><br><span class="line"></span><br><span class="line">    <span class="keyword">data</span> <span class="keyword">class</span> <span class="title class_">Folding</span>(</span><br><span class="line">        <span class="keyword">val</span> parentId: <span class="built_in">Int</span>,</span><br><span class="line">        <span class="keyword">val</span> page: <span class="built_in">Int</span> = <span class="number">1</span>,</span><br><span class="line">        <span class="keyword">val</span> pageSize: <span class="built_in">Int</span> = <span class="number">3</span>,</span><br><span class="line">        <span class="keyword">val</span> state: State = State.IDLE</span><br><span class="line">    ) : CommentItem &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> id: <span class="built_in">Int</span></span><br><span class="line">            <span class="keyword">get</span>() = hashCode()</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> content: CharSequence</span><br><span class="line">            <span class="keyword">get</span>() = <span class="keyword">when</span>  &#123;</span><br><span class="line">                page &lt;= <span class="number">1</span> -&gt; <span class="string">&quot;展开20条回复&quot;</span></span><br><span class="line">                page &gt;= <span class="number">5</span> -&gt; <span class="string">&quot;&quot;</span></span><br><span class="line">                <span class="keyword">else</span> -&gt; <span class="string">&quot;展开更多&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> userId: <span class="built_in">Int</span> = <span class="number">0</span></span><br><span class="line">        <span class="keyword">override</span> <span class="keyword">val</span> userName: CharSequence = <span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">enum</span> <span class="keyword">class</span> <span class="title class_">State</span> &#123;</span><br><span class="line">            IDLE, LOADING, LOADED_ALL</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这部分没啥好说的，可以注意两个点：</p>
+</li>
+<li><p><code>data class</code>也是可以抽象的。但这边我处理不是很严谨，比如<code>CommentItem</code>我把<code>userId</code>和<code>userName</code>也抽象出来了，其实不应该抽象出来。</p>
+</li>
+<li><p>在基于<code>Reducer</code>的框架下，最好是把<code>data class</code>的属性都定义为<code>val</code>。</p>
+</li>
+</ul>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>更多的代码就不贴了，贴太多影响观感。有兴趣的朋友可以<a target="_blank" rel="noopener" href="https://github.com/blackfrogxxoo/CommentDemo">移步源码</a>。</p>
+<p>总结一下实现心得：</p>
+<ul>
+<li>数据驱动UI</li>
+<li>对业务的精准抽象</li>
+<li>对异步的延伸理解</li>
+<li>灵活使用<code>Collection</code>操作符</li>
+<li>没有UI和PM，写代码真TM爽！</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/%E6%8A%BD%E8%B1%A1/" rel="tag"># 抽象</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/09/04/first/" rel="prev" title="拒绝代码PUA，优雅地迭代业务代码">
+                  <i class="fa fa-angle-left"></i> 拒绝代码PUA，优雅地迭代业务代码
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">blackfrog</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
